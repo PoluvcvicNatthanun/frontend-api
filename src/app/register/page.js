@@ -44,7 +44,7 @@ export default function register() {
   }
 
   try {
-    const response = await fetch("https://6a7e6ee33183f5fd884a133a.mockapi.io", {
+    const response = await fetch("https://6a7e6ee33183f5fd884a133a.mockapi.io/Fontend-api", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -152,7 +152,7 @@ return (
         </div>
 
         <h1 className="relative text-3xl font-bold text-white">
-          สมัครสมาชิก
+          ลงทะเบียน
         </h1>
         <p className="relative mt-2 text-sm text-cyan-200/70">
           กรอกข้อมูลเพื่อสร้างบัญชีผู้ใช้งาน

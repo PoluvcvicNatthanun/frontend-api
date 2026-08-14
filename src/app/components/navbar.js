@@ -25,6 +25,13 @@ export default function Navbar() {
             </Link>
 
             <Link
+              href="/users"
+              className="hover:text-cyan-400 transition duration-300"
+            >
+              ผู้ใช้งาน
+            </Link>
+
+            <Link
               href="/about"
               className="hover:text-cyan-400 transition duration-300"
             >
@@ -49,7 +56,7 @@ export default function Navbar() {
               href="/register"
               className="px-5 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-[0_6px_18px_-6px_rgba(6,182,212,0.6)] hover:shadow-[0_8px_22px_-6px_rgba(6,182,212,0.75)] hover:scale-105 transition duration-300"
             >
-              สมัครสมาชิก
+              ลงทะเบียน
             </Link>
 
           </div>

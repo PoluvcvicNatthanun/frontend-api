@@ -69,7 +69,7 @@ export default function Home() {
             className="group flex h-12 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-7 text-sm font-semibold text-white shadow-[0_10px_25px_-8px_rgba(6,182,212,0.6)] hover:shadow-[0_14px_30px_-8px_rgba(6,182,212,0.75)] hover:-translate-y-0.5 transition-all duration-300"
           >
             <UserPlus className="h-4 w-4" />
-            สมัครสมาชิก
+            ลงทะเบียน
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
           <Link
