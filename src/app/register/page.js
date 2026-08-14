@@ -28,7 +28,6 @@ export default function register() {
   const handleSubmit = async (e) => {
   e.preventDefault();
 
-  // ใช้ Object.values ตรวจสอบทุกช่องโดยไม่ต้องพึ่งชื่อ field ตรงๆ
   const isEmpty = Object.values(form).some(
     (value) => !value || String(value).trim() === ""
   );
@@ -45,15 +44,21 @@ export default function register() {
   }
 
   try {
-    const response = await fetch("https://6a7e6ee33183f5fd884a133a.mockapi.io/Fontend-api", {
+    const response = await fetch("https://6a7e6ee33183f5fd884a133a.mockapi.io", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(form), // ส่งทั้ง object ตรงๆ ไม่ต้องพิมพ์ชื่อ field ซ้ำ กันพิมพ์ผิด
+      body: JSON.stringify(form),
     });
 
-    const result = await response.json();
+    // กันเคส response ไม่มี body หรือ body ไม่ใช่ JSON (เช่นตอน API ถูกลบ)
+    let result = {};
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
 
     if (response.ok) {
       await Swal.fire({
@@ -64,6 +69,7 @@ export default function register() {
         confirmButtonColor: "#3085d6",
       });
       setForm(initialFormState);
+
     } else if (response.status === 400) {
       await Swal.fire({
         icon: "warning",
@@ -72,16 +78,39 @@ export default function register() {
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#fff700",
       });
+
+    } else if (response.status === 404) {
+      // เคสนี้เกิดบ่อยตอน API/endpoint ถูกลบหรือเปลี่ยนชื่อ
+      await Swal.fire({
+        icon: "error",
+        title: `ไม่พบปลายทาง API (status: ${response.status})`,
+        text: "อาจเป็นเพราะ API ถูกลบหรือ URL ไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#ef4444",
+      });
+
     } else if (response.status === 500) {
       await Swal.fire({
         icon: "error",
         title: `เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์ (status: ${response.status})`,
-        text: result.message || "เกิดข้อผิดพลาด",
+        text: result.message || "เซิร์ฟเวอร์ขัดข้อง กรุณาลองใหม่อีกครั้งภายหลัง",
         confirmButtonText: "ตกลง",
         confirmButtonColor: "#ff0000",
       });
+
+    } else {
+      // เผื่อ status code อื่น ๆ ที่ไม่ได้ดักไว้ (เช่น 401, 403, 502, 503)
+      await Swal.fire({
+        icon: "error",
+        title: `เกิดข้อผิดพลาดไม่ทราบสาเหตุ (status: ${response.status})`,
+        text: result.message || "กรุณาลองใหม่อีกครั้ง หรือติดต่อผู้ดูแลระบบ",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#ef4444",
+      });
     }
+
   } catch (error) {
+    // เคสนี้เกิดตอนเน็ตหลุด, CORS ผิด, หรือ URL ผิดจนเรียกไม่ถึงเซิร์ฟเวอร์เลย
     console.error("เกิดข้อผิดพลาด:", error);
     await Swal.fire({
       icon: "warning",
