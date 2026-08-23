@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 
 const API_URL = "https://6a7e6ee33183f5fd884a133a.mockapi.io/Fontend-api";
 
@@ -60,8 +61,17 @@ export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+  const router = useRouter();
+  const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    setIsAuth(true);
     fetchUsers();
   }, []);
 
@@ -101,17 +111,39 @@ export default function UsersPage() {
       confirmButtonColor: "#e11d48",
       cancelButtonColor: "#94a3b8",
     });
-    if (result.isConfirmed) {
-      // TODO: เรียก API ลบข้อมูลจริง
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setDeletingId(id);
+
+      const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || `Status ${response.status}`);
+      }
+
       setUsers((prev) => prev.filter((u) => u.id !== id));
+
       await Swal.fire({
         icon: "success",
-        title: "ลบข้อมูลเรียบร้อย",
-        timer: 1200,
+        title: "ลบข้อมูลเรียบร้อยแล้ว",
+        timer: 1500,
         showConfirmButton: false,
       });
+    } catch (error) {
+      await Swal.fire({
+        icon: "error",
+        title: "ลบข้อมูลไม่สำเร็จ",
+        text: error.message,
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
+
+  if (!isAuth) return null;
 
   // ----- Error state -----
   if (isError) {
@@ -205,9 +237,10 @@ export default function UsersPage() {
                               </button>
                               <button
                                 onClick={() => handleDelete(user.id)}
-                                className="rounded-lg bg-rose-100 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-200 active:scale-95"
+                                disabled={deletingId === user.id}
+                                className="rounded-lg bg-rose-100 px-3 py-1.5 text-xs font-medium text-rose-600 transition hover:bg-rose-200 active:scale-95 disabled:opacity-50"
                               >
-                                ลบ
+                                {deletingId === user.id ? "กำลังลบ..." : "ลบ"}
                               </button>
                             </div>
                           </td>
@@ -260,9 +293,10 @@ export default function UsersPage() {
                         </button>
                         <button
                           onClick={() => handleDelete(user.id)}
-                          className="flex-1 rounded-lg bg-rose-100 py-2 text-xs font-medium text-rose-600 transition active:scale-95"
+                          disabled={deletingId === user.id}
+                          className="flex-1 rounded-lg bg-rose-100 py-2 text-xs font-medium text-rose-600 transition active:scale-95 disabled:opacity-50"
                         >
-                          ลบ
+                          {deletingId === user.id ? "กำลังลบ..." : "ลบ"}
                         </button>
                       </div>
                     </div>
