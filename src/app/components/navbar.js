@@ -2,19 +2,34 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, LogIn, LogOut, UserPlus } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [token, setToken] = useState(null);
   const router = useRouter();
+  const pathname = usePathname(); // คอยตรวจเช็คการเปลี่ยน Route/หน้า
 
-  // ตรวจสอบ Token เมื่อ Component โหลด
-  useEffect(() => {
+  // ฟังก์ชันสำหรับตรวจเช็ค Token จาก localStorage
+  const checkAuth = () => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
+  };
+
+  useEffect(() => {
+    // 1. เช็ค Token เมื่อเริ่มโหลด Component
+    checkAuth();
+
+    // 2. ดักจับ Event เมื่อมีการล็อกอินเข้าสู่ระบบ
+    window.addEventListener("storage", checkAuth);
+    return () => window.removeEventListener("storage", checkAuth);
   }, []);
+
+  // 3. เมื่อเปลี่ยนหน้า (เช่น ย้ายจาก /login ไป /users) ให้เช็ค Token ใหม่ทันที
+  useEffect(() => {
+    checkAuth();
+  }, [pathname]);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 

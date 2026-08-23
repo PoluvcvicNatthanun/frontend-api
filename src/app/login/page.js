@@ -42,35 +42,35 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // 1. ดึงข้อมูลสมาชิกทั้งหมดมาตรวจสอบ (ใช้ GET เพื่อไม่ให้บันทึกข้อมูลเพิ่ม)
       const response = await fetch(LOGIN_URL, {
-        method: "POST",
+        method: "GET",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
       });
 
-      const data = await response.json().catch(() => ({}));
-
-      // 1. ถ้า Server ตอบกลับ Error (เช่น 400, 401, 500)
       if (!response.ok) {
-        throw new Error(data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+        throw new Error("ไม่สามารถเชื่อมต่อระบบได้");
       }
 
-      // 2. ถ้า Login สำเร็จ -> ค้นหา Token จากโครงสร้างข้อมูลต่างๆ
-      const token =
-        data.token ||
-        data.accessToken ||
-        data.jwt ||
-        data.data?.token ||
-        data.data?.accessToken;
+      const users = await response.json();
 
-      if (token) {
-        localStorage.setItem("token", token);
-      } else {
-        // หาก API MockAPI ส่ง array หรือ object ทั่วไปมา ให้สร้าง Mock Token ขึ้นมาทดแทน
-        localStorage.setItem("token", "mock_token_success");
+      // 2. ค้นหาผู้ใช้จาก username หรือ firstname ใน MockAPI
+      const inputUsername = form.username.trim().toLowerCase();
+      const foundUser = users.find(
+        (u) =>
+          u.username?.toLowerCase() === inputUsername ||
+          u.firstname?.toLowerCase() === inputUsername
+      );
+
+      if (!foundUser) {
+        throw new Error("ไม่พบชื่อผู้ใช้งานนี้ในระบบ");
       }
+
+      // 3. ถ้าเจอข้อมูล ให้เก็บ Token ลง localStorage
+      const token = foundUser.token || "mock_token_success";
+      localStorage.setItem("token", token);
 
       await Swal.fire({
         icon: "success",
@@ -82,7 +82,7 @@ export default function LoginPage() {
         color: "#f8fafc",
       });
 
-      // นำทางไปยังหน้าดูผู้ใช้งาน
+      // นำทางไปยังหน้า Users
       router.push("/users");
     } catch (error) {
       await Swal.fire({
