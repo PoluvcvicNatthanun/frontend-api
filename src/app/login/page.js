@@ -52,26 +52,38 @@ export default function LoginPage() {
 
       const data = await response.json().catch(() => ({}));
 
+      // 1. ถ้า Server ตอบกลับ Error (เช่น 400, 401, 500)
       if (!response.ok) {
         throw new Error(data.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
       }
 
-      // บันทึก Token ลง localStorage
-      if (data.token) {
-        localStorage.setItem("token", data.token);
+      // 2. ถ้า Login สำเร็จ -> ค้นหา Token จากโครงสร้างข้อมูลต่างๆ
+      const token =
+        data.token ||
+        data.accessToken ||
+        data.jwt ||
+        data.data?.token ||
+        data.data?.accessToken;
+
+      if (token) {
+        localStorage.setItem("token", token);
+      } else {
+        // หาก API MockAPI ส่ง array หรือ object ทั่วไปมา ให้สร้าง Mock Token ขึ้นมาทดแทน
+        localStorage.setItem("token", "mock_token_success");
       }
 
       await Swal.fire({
         icon: "success",
         title: "เข้าสู่ระบบสำเร็จ",
         text: "กำลังนำคุณเข้าสู่ระบบ...",
-        timer: 1500,
+        timer: 1200,
         showConfirmButton: false,
         background: "#0f172a",
         color: "#f8fafc",
       });
 
-      router.push("/");
+      // นำทางไปยังหน้าดูผู้ใช้งาน
+      router.push("/users");
     } catch (error) {
       await Swal.fire({
         icon: "error",

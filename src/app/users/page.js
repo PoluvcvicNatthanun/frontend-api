@@ -65,6 +65,7 @@ export default function UsersPage() {
   const router = useRouter();
   const [isAuth, setIsAuth] = useState(false);
 
+  // ตรวจสอบ Authentication เพียงจุดเดียวเมื่อเริ่มต้น
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -73,7 +74,7 @@ export default function UsersPage() {
     }
     setIsAuth(true);
     fetchUsers();
-  }, []);
+  }, [router]);
 
   const fetchUsers = async () => {
     setIsLoading(true);
